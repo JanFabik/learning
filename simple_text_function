@@ -1,0 +1,13 @@
+import datetime
+
+
+def payment_acknowledgement(user_name, amount, payment_term):
+    current_date = datetime.datetime.now().strftime('%d''-''%B''-''%Y'' | ''%H'':''%M'':''%S')
+    due_date = (datetime.date.today() + datetime.timedelta(payment_term)).strftime('%d''-''%B''-''%Y')
+    print(f'Payment request date {current_date}')
+    print(f'Hello, {user_name}.')
+    print(f'Your invoice for amount of ${amount:.2f} is due on {due_date}.', '\n')
+
+
+payment_acknowledgement('Jan Fabik', 65.35, 60)
+payment_acknowledgement('Karel Novak', 28.10, 90)
