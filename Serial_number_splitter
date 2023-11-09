@@ -1,0 +1,50 @@
+import PySimpleGUI as sg
+import re
+import csv
+
+sg.theme('SystemDefaultForReal')
+layout = [
+    [sg.Push(), sg.Button('Split',  key = '-SPLITSNS-', size=(10,2), font = ('Arial Baltic', 14)), sg.Push()],
+    [sg.Text('Remove "S" '), sg.Checkbox('', True, key = '-REMOVES-')],
+    [sg.Text('Delimiters:    '), sg.Input('',8,key = "-DELIMITERS-", tooltip = 'Comma and/or space set by default')],
+    [sg.Push(), sg.Button('Export .csv', key = '-EXPORTCSV-', size = (10,2), font = ('Arial Baltic', 12)), sg.Push()],
+    [sg.Multiline(no_scrollbar = False, size = (100, 20), key = '-TEXTBOX-')],
+    [sg.Text('Serial number count: ', key = '-SNCOUNT-'), sg.Push(), sg.Button('Clear', key = '-CLEAR-', size = (6,2), font = ('Arial Baltic', 12))]
+]
+window = sg.Window('Serial Number Splitter', layout)
+while True:
+    event, values = window.read()
+    if event == sg.WIN_CLOSED:
+        break
+
+    if event == '-SPLITSNS-':
+        full_text = values['-TEXTBOX-']
+        if values['-REMOVES-'] == True:
+            remove_S = full_text.replace('S', '')
+        else:
+            remove_S = full_text
+
+        for delimiter in values["-DELIMITERS-"]:
+            if delimiter in remove_S:
+                remove_S = remove_S.replace(delimiter, " ")
+
+        updated_list1 = remove_S.replace(',', ' ').replace('\n', ' ').replace('\t', ' ')
+        updated_list2 = re.split('[, \n\t]', updated_list1)
+
+        new_list = [x for x in updated_list2 if x != '']
+        window['-TEXTBOX-'].update('\n'.join(new_list))
+
+        serial_number_count = len(new_list)
+        window['-SNCOUNT-'].update("Serial number count: " + str(serial_number_count))
+
+    if event == '-CLEAR-':
+        window['-TEXTBOX-'].update('')
+        window['-SNCOUNT-'].update("Serial number count: ")
+
+    if event == '-EXPORTCSV-':
+            with open('serial_numbers.csv', 'w', encoding="ISO-8859-1", newline='') as file:
+                writer = csv.writer(file)
+                for i in new_list:
+                    writer.writerow([i])
+
+window.close()
