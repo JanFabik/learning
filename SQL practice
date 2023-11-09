@@ -1,0 +1,105 @@
+import sqlite3
+from employee import Employee
+from names_generator import generate_name
+import random
+
+conn = sqlite3.connect('personal_details.db')
+cur = conn.cursor()
+
+# with conn:
+#     cur.execute("""CREATE TABLE rand_country (
+#         site_id TEXT,
+#         city TEXT,
+#         street TEXT,
+#         zip TEXT,
+#         country TEXT,
+#         manager TEXT
+#         )""")
+
+# with conn:
+#     cur.execute("DROP TABLE rand_country")
+
+# with conn:
+#     cur.execute("""INSERT INTO rand_country (country) VALUES ('India')""")
+
+
+
+def rand_name():
+    return generate_name(style = 'capital')
+
+
+def rand_pay():
+    return random.randint(51000,99999) + round(random.random(), 2)
+
+
+def insert_id(id_num):
+    with conn:
+        cur.execute("INSERT INTO salary_by_role (id_num) VALUES (:id_num)", {'id_num': id_num})
+
+def insert_emp(emp):
+    with conn:
+        cur.execute("INSERT INTO employees VALUES (:id_num, :first_name, :last_name, :pay_amount)", {'id_num': emp.id_num, 'first_name': emp.first_name, 'last_name': emp.last_name, 'pay_amount': emp.pay_amount})
+
+
+def get_emps_by_name(lastname):
+    cur.execute("SELECT * FROM employees WHERE last_name = :last_name", {'last_name': lastname})
+    return cur.fetchall()
+
+
+def update_pay(emp, pay):
+    with conn:
+        cur.execute("""UPDATE employees SET pay_amount = :pay_amount
+                        WHERE first_name = :first_name AND last_name = :last_name""",
+                    {'first_name': emp.first_name, 'last_name': emp.last_name, 'pay_amount': pay})
+
+
+def remove_emp(emp):
+    with conn:
+        cur.execute("DELETE FROM employees WHERE first_name = :first_name AND last_name = :last_name",
+                    {'first_name': emp.first_name, 'last_name': emp.last_name})
+
+
+def add_column_to_table(table_name, new_column_name):
+    with conn:
+        cur.execute(f"ALTER TABLE {table_name} ADD COLUMN {new_column_name} TEXT")
+
+
+def rename_column(table_name, current_column_name, new_column_name):
+    with conn:
+        cur.execute(f"ALTER TABLE {table_name} RENAME COLUMN {current_column_name} TO {new_column_name}")
+
+
+def cell_update(table, column, new_value, where_column, identifier_value):
+    with conn:
+        cur.execute(f"UPDATE {table} SET {column} = ? WHERE {where_column} = ?", (new_value, identifier_value))
+
+
+
+# with conn:
+#     cur.execute("UPDATE employees SET email = first_name || '.' || last_name || '@mycompany.com'")
+
+
+# with conn:
+#     cur.execute(f"UPDATE employees SET country = (SELECT country FROM rand_country ORDER BY RANDOM() LIMIT 1) WHERE pay_amount < 99500")
+
+# countries = ['United States', 'United Kingdom', 'China', 'South Africa', 'Colombia', 'India', 'Australia']
+# cur.execute("SELECT id_num FROM employees")
+# rows = cur.fetchall()
+#
+# for row in rows:
+#     random_name = random.choice(countries)
+#     cur.execute("UPDATE employees SET country = ? WHERE id_num = ?", (random_name, row[0]))
+#     conn.commit()
+
+# for row in rows:
+#     random_name = random.choice(names)
+#     cursor.execute("UPDATE your_table SET your_column = ? WHERE id = ?", (random_name, row[0]))
+#     conn.commit()
+
+
+# cur.execute("SELECT country FROM employees WHERE pay_amount < 99500")
+# print(cur.fetchone() == (None,))
+
+
+
+conn.close()
